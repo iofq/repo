@@ -1,0 +1,36 @@
+# Maintainer: iofq <iofq.at.iofq.net>
+pkgname=dwm-iofq-git
+pkgver=6.2
+pkgrel=1
+pkgdesc="iofq's patched fork of dwm"
+arch=("x86_64")
+url="http://dwm.suckless.org"
+license=('MIT')
+depends=('libx11' 'libxinerama' 'libxft' 'freetype2')
+optdepends=(
+        'alacritty: preferred terminal emulator'
+        'dmenu: program launcher'
+)
+provides=('dwm')
+conflicts=('dwm')
+sha256sums=('97902e2e007aaeaa3c6e3bed1f81785b817b7413947f1db1d3b62b8da4cd110e' 'SKIP')
+source=(
+        http://dl.suckless.org/dwm/dwm-$pkgver.tar.gz
+        dwm-iofq-git::git+https://github.com/iofq/dwm.git
+)
+prepare() {
+    cd "$srcdir/dwm-$pkgver"
+    for f in $srcdir/$pkgname/patches/dwm-*; do
+        patch -p1 < "$f"
+    done
+    patch -p1 < "$srcdir/$pkgname/patches/dwm_git_config.diff"
+}
+build() {
+	cd "$srcdir/dwm-$pkgver"
+    make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 FREETYPEINC=/usr/include/freetype2
+}
+package() {
+	cd "$srcdir/dwm-$pkgver"
+    make PREFIX=/usr DESTDIR="$pkgdir" install
+    install -m644 -D LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
